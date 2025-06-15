@@ -27,19 +27,28 @@
         </ul>
         <div class="row">
           <div class="col-md-6 col-12 p-0">
-            <Editor />
+            <Editor @showRefresh="refreshPage"/>
           </div>
           <div class="col-md-6 col-12 p-0">
-            <ListView />
+            <ListView :showRefresh="refresh"/>
           </div>
       </div>
     </div>
 </template>
 
 <script setup>
+    import { ref } from 'vue'
     import { RouterLink} from 'vue-router'
     import Editor from  '@/components/editor.vue'
     import ListView from '@/components/listView.vue'
+
+
+    const refresh = ref(false)
+
+    const refreshPage = () => {
+        refresh.value = !refresh.value
+    }
+
 
 </script>
 

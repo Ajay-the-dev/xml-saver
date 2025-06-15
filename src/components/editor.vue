@@ -1,6 +1,7 @@
 <script setup>
 import { ref,onMounted,watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/dracula.css'
@@ -19,6 +20,11 @@ import 'codemirror/addon/search/matchesonscrollbar.css'
 
 
 import Swal from 'sweetalert2'
+import { showToast } from '@/components/utils/utils'
+
+
+
+import Modal from '@/components/modal.vue'
 
   const route = useRoute()
   const router = useRouter()
@@ -26,12 +32,15 @@ import Swal from 'sweetalert2'
   const showEditor = ref(true)
   const xmlContent = ref('')
   const editorInstance = ref(null);
+  
 
 
 
 
 
   const fileInput = ref(null)
+  const fileSaver = ref(null)
+
 
 
 
@@ -148,33 +157,43 @@ import Swal from 'sweetalert2'
         }
   });
 
-  const saveXml = () =>{    
-    console.log(xmlContent.value);
+  const saveXml = () =>{  
+    fileSaver?.value.openModal() 
   }
 
-  const clearXml = () => {
+  const clearXml = (force = false) => {
 
-    if(xmlContent.value.trim() !== '')
+    if(force)
     {
-        Swal.fire({
-          title: 'Confirm',
-          text: 'Are you sure ? ',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Yes',
-      }).then((result) => {
-            if (result.isConfirmed) {
-              if (editorInstance.value) {
-                editorInstance.value.setValue('')
-                xmlContent.value = ''
-              }
+      if (editorInstance.value) {
+              editorInstance.value.setValue('')
+              xmlContent.value = ''
             }
-      })
     }
     else{
-        if (editorInstance.value) {
-          editorInstance.value.setValue('')
-          xmlContent.value = ''
+
+        if(xmlContent.value.trim() !== '')
+        {
+            Swal.fire({
+              title: 'Confirm',
+              text: 'Are you sure ? ',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Yes',
+          }).then((result) => {
+                if (result.isConfirmed) {
+                  if (editorInstance.value) {
+                    editorInstance.value.setValue('')
+                    xmlContent.value = ''
+                  }
+                }
+          })
+        }
+        else{
+            if (editorInstance.value) {
+              editorInstance.value.setValue('')
+              xmlContent.value = ''
+            }
         }
     }
     
@@ -204,10 +223,37 @@ import Swal from 'sweetalert2'
   }
 
 
+  const saveData = async(data) =>{
+    
+      const response = await axios.post('http://127.0.0.1:8000/api/saveXml',{
+        title: data.title,
+        description: data.desc,
+        code : xmlContent.value
+      },{
+        Accept:'application/json'
+      }).then((response)=>{
+        console.log(response);
+        const data = response.data
+        if(data.status === 1)
+        {
+          clearXml(true)
+          showToast(data.message, 'success')
+          emit('showRefresh',true)
+        }
+        else{
+          showToast(data.message, 'error')
+        }
+      }).catch((error)=>{
+          showToast(error, 'error')
+      })
+  }
+
+  const emit = defineEmits(['showRefresh'])
+
 </script>
 
 <template>
-  <div class="editor bg-light p-5" id="">
+  <div class="editor bg-light p-4" id="">
     <div class="row">
       <div class="col-12">
         <h3>The XML Editor</h3>
@@ -223,11 +269,12 @@ import Swal from 'sweetalert2'
         <textarea id="xml-editor" class="form-control" rows="10"></textarea>
         <div class="mt-2">
           <button class="btn btn-primary m-1" @click="saveXml" :disabled="xmlContent.trim() === ''">Save</button>
-          <button class="btn btn-primary m-1" @click="clearXml" :disabled="xmlContent.trim() === ''">Reset</button>
+          <button class="btn btn-primary m-1" @click="clearXml" :disabled="xmlContent.trim() === ''">Clear</button>
           <button class="btn btn-primary m-1" @click="goToHome" v-if="route.name ==='editor'">Go Back</button>
         </div>
       </div>
     </div>
+      <Modal ref="fileSaver" @save-xml="saveData"/>
   </div>
 </template>
 
