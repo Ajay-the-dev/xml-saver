@@ -23,7 +23,8 @@
           </div>
           <div class="modal-footer">
               <button class="btn btn-primary" @click="InitiateSave">Save</button>
-            <button class="btn btn-secondary" @click="closeModal">Close</button>
+              <button class="btn btn-primary" v-if="saveAsNew" @click="InitiateSave(false)">Save as New</button>
+              <button class="btn btn-secondary" @click="closeModal">Close</button>
           </div>
         </div>
       </div>
@@ -36,6 +37,9 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { showToast } from '@/components/utils/utils'
+import { useCodeStore } from '@/stores/codeStore'
+import { useRoute,useRouter } from 'vue-router'
+import { Toast } from 'bootstrap'
 
 
 const modalRef = ref(null)
@@ -43,6 +47,15 @@ let modalInstance = null
 
 const title = ref('')
 const description = ref('')
+const saveAsNew = ref(false)
+
+const persistant = ref(false)
+
+const codeStore = useCodeStore()
+
+const route = useRoute()
+const router = useRouter()
+
 
 onMounted(() => {
 if(modalRef.value) {
@@ -52,6 +65,42 @@ if(modalRef.value) {
     console.log('not ready');
     
   }
+
+  setTimeout(() => {
+    const hasData = codeStore.details
+    if(Object.keys(hasData).length > 0 )
+    {
+
+      if(hasData.title)
+      {
+        title.value = hasData.title
+      }
+
+      if(hasData.description)
+      {
+        description.value = hasData.description
+      }
+    
+
+      saveAsNew.value = codeStore.getCodeStatus()
+
+      persistant.value = true
+      
+    }
+  }, 0);
+
+  if(route.params.menu === 'edit' || route.params.menu === 'view')
+  {
+      if(codeStore.code === "")
+      {
+        showToast('Something went wrong with editor', 'error')
+        setTimeout(() => {
+          router.back()
+        }, 2000);
+      }
+  }
+
+
 })
 
 const openModal = () => {
@@ -59,10 +108,17 @@ const openModal = () => {
 }
 
 const closeModal = () => {
+  if(!persistant.value)
+  {
+    title.value = ''
+    description.value = ''
+  }
   modalInstance.hide()
 }
 
-const InitiateSave = () => {
+const InitiateSave = (old = true) => {
+
+    
  
     const name = title.value.trim()
     const desc = description.value.trim()
@@ -91,6 +147,9 @@ const InitiateSave = () => {
     const filedata = {}
     filedata.title = name
     filedata.desc = desc
+    filedata.update = route.params.menu === 'edit' ? true :false
+    filedata.new = old ? false : true
+    
     emit("saveXml",filedata)
     closeModal()
 }
