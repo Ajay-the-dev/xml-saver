@@ -12,7 +12,7 @@
                         </div>
                     </router-link></a>
             </li>
-            <li class="nav-item d-none d-sm-block">
+            <!--li class="nav-item d-none d-sm-block">
                 <a class="nav-link "  href="#" tabindex="-1" aria-disabled="true">
                     <router-link to="/" class="text-decoration-none">
                         <div class="card tile">
@@ -23,7 +23,7 @@
                         </div>
                     </router-link>
                 </a>
-            </li>
+            </li-->
              <li class="nav-item">
                 <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">
                     <router-link to="list" class="text-decoration-none">
@@ -75,6 +75,6 @@
 
 .tile:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(36, 49, 223, 0.842);
+  box-shadow: 0 8px 16px #0d6efd;
 }
 </style>
