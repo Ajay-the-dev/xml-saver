@@ -87,7 +87,7 @@ const codeView = (data) =>{
   codeStore.setCode(data.code) 
   showToast('Redirecting to code editor','info')
   setTimeout(() => {
-    router.push('/view')
+    router.push('/editor/view')
   }, 3000);
 }
 

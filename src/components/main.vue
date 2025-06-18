@@ -70,11 +70,11 @@
 }
 
 .tile{
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.4s ease, box-shadow 0.2s ease;
 }
 
 .tile:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px #0d6efd;
+  transform: scale(1.15);
+  box-shadow: 0 3px 6px #0d6efd;
 }
 </style>
